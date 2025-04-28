@@ -1,0 +1,237 @@
+{% extends 'layout.html' %}
+
+{% block title %}Data Collection - TaxWizard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="mb-3">Tax Data Collection</h1>
+        <p class="lead">Enter your tax information for the current year to get personalized advice and optimization.</p>
+    </div>
+</div>
+
+<form method="POST" action="{{ url_for('data_collection') }}" class="needs-validation" novalidate>
+    <!-- Basic Information Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4 class="mb-0"><i class="fas fa-user me-2"></i>Basic Information</h4>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="income" class="form-label">Total Income (₹)</label>
+                    <input type="number" class="form-control" id="income" name="income" 
+                           value="{{ tax_data.income if tax_data else '' }}" 
+                           placeholder="Enter your total income" 
+                           step="0.01" data-type="numeric" required>
+                    <div class="invalid-feedback">
+                        Please enter your total income.
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="filing_status" class="form-label">Filing Status</label>
+                    <select class="form-select" id="filing_status" name="filing_status" required>
+                        <option value="" disabled {% if not tax_data %}selected{% endif %}>Select your filing status</option>
+                        <option value="individual" {% if tax_data and tax_data.filing_status == 'individual' %}selected{% endif %}>Individual</option>
+                        <option value="huf" {% if tax_data and tax_data.filing_status == 'huf' %}selected{% endif %}>Hindu Undivided Family (HUF)</option>
+                        <option value="partnership" {% if tax_data and tax_data.filing_status == 'partnership' %}selected{% endif %}>Partnership Firm</option>
+                        <option value="company" {% if tax_data and tax_data.filing_status == 'company' %}selected{% endif %}>Company</option>
+                        <option value="nri" {% if tax_data and tax_data.filing_status == 'nri' %}selected{% endif %}>Non-Resident Indian (NRI)</option>
+                    </select>
+                    <div class="invalid-feedback">
+                        Please select your filing status.
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="dependents" class="form-label">Number of Dependents</label>
+                    <input type="number" class="form-control" id="dependents" name="dependents"
+                           value="{{ tax_data.dependents if tax_data else 0 }}"
+                           min="0" data-type="numeric" required>
+                    <div class="invalid-feedback">
+                        Please enter a valid number of dependents.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Deductions Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4 class="mb-0"><i class="fas fa-file-invoice-dollar me-2"></i>Deductions</h4>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="mortgage_interest" class="form-label">Mortgage Interest (₹)</label>
+                    <input type="number" class="form-control" id="mortgage_interest" name="mortgage_interest"
+                           value="{{ tax_data.mortgage_interest if tax_data else 0 }}"
+                           min="0" step="0.01" data-type="numeric">
+                    <div class="invalid-feedback">
+                        Please enter a valid amount.
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="property_tax" class="form-label">Property Tax (₹)</label>
+                    <input type="number" class="form-control" id="property_tax" name="property_tax"
+                           value="{{ tax_data.property_tax if tax_data else 0 }}"
+                           min="0" step="0.01" data-type="numeric">
+                    <div class="invalid-feedback">
+                        Please enter a valid amount.
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="charitable_contributions" class="form-label">Charitable Contributions (₹)</label>
+                    <input type="number" class="form-control" id="charitable_contributions" name="charitable_contributions"
+                           value="{{ tax_data.charitable_contributions if tax_data else 0 }}"
+                           min="0" step="0.01" data-type="numeric">
+                    <div class="invalid-feedback">
+                        Please enter a valid amount.
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="medical_expenses" class="form-label">Medical Expenses (₹)</label>
+                    <input type="number" class="form-control" id="medical_expenses" name="medical_expenses"
+                           value="{{ tax_data.medical_expenses if tax_data else 0 }}"
+                           min="0" step="0.01" data-type="numeric">
+                    <div class="invalid-feedback">
+                        Please enter a valid amount.
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="retirement_contributions" class="form-label">Retirement Contributions (EPF/PPF/NPS) (₹)</label>
+                    <input type="number" class="form-control" id="retirement_contributions" name="retirement_contributions"
+                           value="{{ tax_data.retirement_contributions if tax_data else 0 }}"
+                           min="0" step="0.01" data-type="numeric">
+                    <div class="invalid-feedback">
+                        Please enter a valid amount.
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="life_insurance" class="form-label">Life Insurance Premium (₹)</label>
+                    <input type="number" class="form-control" id="life_insurance" name="life_insurance"
+                           value="{{ tax_data.life_insurance if tax_data else 0 }}"
+                           min="0" step="0.01" data-type="numeric">
+                    <div class="invalid-feedback">
+                        Please enter a valid amount.
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="education_loan" class="form-label">Education Loan Interest (₹)</label>
+                    <input type="number" class="form-control" id="education_loan" name="education_loan"
+                           value="{{ tax_data.education_loan if tax_data else 0 }}"
+                           min="0" step="0.01" data-type="numeric">
+                    <div class="invalid-feedback">
+                        Please enter a valid amount.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Business Income Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4 class="mb-0"><i class="fas fa-briefcase me-2"></i>Business Income</h4>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Are you self-employed?</label>
+                    <div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="self_employed" id="self_employed_yes" value="yes"
+                                  {% if tax_data and tax_data.self_employed %}checked{% endif %}>
+                            <label class="form-check-label" for="self_employed_yes">Yes</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="self_employed" id="self_employed_no" value="no"
+                                  {% if not tax_data or not tax_data.self_employed %}checked{% endif %}>
+                            <label class="form-check-label" for="self_employed_no">No</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="business_income" class="form-label">Business Income (₹)</label>
+                    <input type="number" class="form-control" id="business_income" name="business_income"
+                           value="{{ tax_data.business_income if tax_data else 0 }}"
+                           min="0" step="0.01" data-type="numeric">
+                    <div class="invalid-feedback">
+                        Please enter a valid amount.
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="business_expenses" class="form-label">Business Expenses (₹)</label>
+                    <input type="number" class="form-control" id="business_expenses" name="business_expenses"
+                           value="{{ tax_data.business_expenses if tax_data else 0 }}"
+                           min="0" step="0.01" data-type="numeric">
+                    <div class="invalid-feedback">
+                        Please enter a valid amount.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Investments and Rental Income Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4 class="mb-0"><i class="fas fa-chart-line me-2"></i>Investments & Rental Income</h4>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="capital_gains" class="form-label">Capital Gains (₹)</label>
+                    <input type="number" class="form-control" id="capital_gains" name="capital_gains"
+                           value="{{ tax_data.capital_gains if tax_data else 0 }}"
+                           min="0" step="0.01" data-type="numeric">
+                    <div class="invalid-feedback">
+                        Please enter a valid amount.
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="rental_income" class="form-label">Rental Income (₹)</label>
+                    <input type="number" class="form-control" id="rental_income" name="rental_income"
+                           value="{{ tax_data.rental_income if tax_data else 0 }}"
+                           min="0" step="0.01" data-type="numeric">
+                    <div class="invalid-feedback">
+                        Please enter a valid amount.
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="rental_expenses" class="form-label">Rental Expenses (₹)</label>
+                    <input type="number" class="form-control" id="rental_expenses" name="rental_expenses"
+                           value="{{ tax_data.rental_expenses if tax_data else 0 }}"
+                           min="0" step="0.01" data-type="numeric">
+                    <div class="invalid-feedback">
+                        Please enter a valid amount.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Form Submit Button -->
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end mb-5">
+        <button type="submit" class="btn btn-primary btn-lg">
+            <i class="fas fa-save me-2"></i>Save Tax Information
+        </button>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/form_validation.js') }}"></script>
+{% endblock %}

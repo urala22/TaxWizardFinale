@@ -1,0 +1,251 @@
+{% extends 'layout.html' %}
+
+{% block title %}Compliance - Automated Tax Filing Assistant{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="mb-3">Tax Compliance Monitor</h1>
+        <p class="lead">Track and resolve compliance issues to ensure your tax filing adheres to the latest regulations.</p>
+    </div>
+</div>
+
+{% if tax_data %}
+<div class="row g-4 mb-4">
+    <!-- Compliance Status Card -->
+    <div class="col-md-4">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title mb-4">Compliance Status</h5>
+                <div class="text-center">
+                    <div class="compliance-status mb-3 bg-{{ compliance_class }}">
+                        {{ compliance_status }}
+                    </div>
+                    <div class="mt-4">
+                        <div class="row">
+                            <div class="col-4 text-center">
+                                <div class="h3 text-danger">{{ error_counts.high }}</div>
+                                <div>Critical</div>
+                            </div>
+                            <div class="col-4 text-center">
+                                <div class="h3 text-warning">{{ error_counts.medium }}</div>
+                                <div>Warning</div>
+                            </div>
+                            <div class="col-4 text-center">
+                                <div class="h3 text-info">{{ error_counts.low }}</div>
+                                <div>Minor</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Error Distribution Card -->
+    <div class="col-md-8">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">Compliance Overview</h5>
+                <div class="row align-items-center mt-3">
+                    <div class="col-md-6">
+                        <div class="chart-container">
+                            <canvas id="errorDistributionChart" 
+                                    data-high-errors="{{ error_counts.high }}"
+                                    data-medium-errors="{{ error_counts.medium }}"
+                                    data-low-errors="{{ error_counts.low }}">
+                            </canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mt-2">
+                            <h5 class="mb-3">Compliance Issues by Severity</h5>
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span>Critical Issues</span>
+                                <span class="badge bg-danger">{{ error_counts.high }}</span>
+                            </div>
+                            <div class="progress mb-3" style="height: 10px;">
+                                <div class="progress-bar bg-danger" role="progressbar" 
+                                     style="width: {{ 100 * error_counts.high / (error_counts.high + error_counts.medium + error_counts.low) if (error_counts.high + error_counts.medium + error_counts.low) > 0 else 0 }}%" 
+                                     aria-valuenow="{{ error_counts.high }}" aria-valuemin="0" aria-valuemax="{{ error_counts.high + error_counts.medium + error_counts.low }}">
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span>Warning Issues</span>
+                                <span class="badge bg-warning">{{ error_counts.medium }}</span>
+                            </div>
+                            <div class="progress mb-3" style="height: 10px;">
+                                <div class="progress-bar bg-warning" role="progressbar" 
+                                     style="width: {{ 100 * error_counts.medium / (error_counts.high + error_counts.medium + error_counts.low) if (error_counts.high + error_counts.medium + error_counts.low) > 0 else 0 }}%" 
+                                     aria-valuenow="{{ error_counts.medium }}" aria-valuemin="0" aria-valuemax="{{ error_counts.high + error_counts.medium + error_counts.low }}">
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span>Minor Issues</span>
+                                <span class="badge bg-info">{{ error_counts.low }}</span>
+                            </div>
+                            <div class="progress mb-3" style="height: 10px;">
+                                <div class="progress-bar bg-info" role="progressbar" 
+                                     style="width: {{ 100 * error_counts.low / (error_counts.high + error_counts.medium + error_counts.low) if (error_counts.high + error_counts.medium + error_counts.low) > 0 else 0 }}%" 
+                                     aria-valuenow="{{ error_counts.low }}" aria-valuemin="0" aria-valuemax="{{ error_counts.high + error_counts.medium + error_counts.low }}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col">
+        <div class="card dashboard-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Compliance Issues</h5>
+                {% if errors %}
+                    <span class="badge bg-primary">{{ errors|length }} Issues Found</span>
+                {% else %}
+                    <span class="badge bg-success">No Issues Found</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if errors %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Issue</th>
+                                    <th>Severity</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for error in errors %}
+                                    <tr>
+                                        <td>{{ error.error_field|title }}</td>
+                                        <td>{{ error.error_message }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'danger' if error.severity == 'high' else ('warning' if error.severity == 'medium' else 'info') }}">
+                                                {{ error.severity|title }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if error.resolved %}
+                                                <span class="badge bg-success">Resolved</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Unresolved</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if not error.resolved %}
+                                                <form method="POST" action="{{ url_for('resolve_error', error_id=error.id) }}" class="d-inline">
+                                                    <button type="submit" class="btn btn-sm btn-outline-success">
+                                                        Mark Resolved
+                                                    </button>
+                                                </form>
+                                            {% else %}
+                                                <span class="text-muted">Resolved on {{ error.resolved_at.strftime('%Y-%m-%d') }}</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <h4>No Compliance Issues Found</h4>
+                        <p class="text-muted">Your tax information is compliant with current regulations.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-5">
+    <div class="col-md-6">
+        <div class="card dashboard-card">
+            <div class="card-header">
+                <h5 class="mb-0">Common Compliance Issues</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <h6><i class="fas fa-exclamation-triangle text-danger me-2"></i>Excessive Deductions</h6>
+                        <p class="mb-0 text-muted">Deductions that seem unusually high compared to income can trigger IRS audits.</p>
+                    </li>
+                    <li class="list-group-item">
+                        <h6><i class="fas fa-exclamation-triangle text-danger me-2"></i>Missing Income Sources</h6>
+                        <p class="mb-0 text-muted">Failing to report all income sources is a common compliance issue.</p>
+                    </li>
+                    <li class="list-group-item">
+                        <h6><i class="fas fa-exclamation-triangle text-danger me-2"></i>Retirement Contribution Limits</h6>
+                        <p class="mb-0 text-muted">Exceeding the annual contribution limits for retirement accounts.</p>
+                    </li>
+                    <li class="list-group-item">
+                        <h6><i class="fas fa-exclamation-triangle text-danger me-2"></i>Home Office Deduction</h6>
+                        <p class="mb-0 text-muted">Claiming a home office deduction without meeting the exclusive use requirement.</p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card dashboard-card">
+            <div class="card-header">
+                <h5 class="mb-0">Next Steps</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h6>1. Review and Resolve Issues</h6>
+                    <p>Address any compliance issues identified above to ensure your tax filing is accurate and compliant.</p>
+                    
+                    <h6>2. Update Your Tax Information</h6>
+                    <p>If needed, update your tax information to resolve compliance issues.</p>
+                    
+                    <h6>3. Explore Optimization Strategies</h6>
+                    <p>After resolving compliance issues, explore ways to optimize your tax situation within legal boundaries.</p>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('data_collection') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-edit me-2"></i>Update Tax Information
+                    </a>
+                    <a href="{{ url_for('tax_optimization') }}" class="btn btn-outline-success">
+                        <i class="fas fa-chart-line me-2"></i>View Optimization Strategies
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-exclamation-circle fa-4x text-warning mb-4"></i>
+                <h3>No Tax Data Available</h3>
+                <p class="lead">Please enter your tax information to check compliance status.</p>
+                <a href="{{ url_for('data_collection') }}" class="btn btn-primary mt-3">
+                    <i class="fas fa-edit me-2"></i> Enter Tax Information
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

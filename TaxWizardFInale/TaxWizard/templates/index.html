@@ -1,0 +1,116 @@
+{% extends 'layout.html' %}
+
+{% block title %}Home - Automated Tax Filing Assistant{% endblock %}
+
+{% block content %}
+<div class="px-4 py-5 my-5 text-center">
+    <h1 class="display-5 fw-bold">TaxWizard</h1>
+    <div class="col-lg-8 mx-auto">
+        <p class="lead mb-4">Streamline Your Tax Filing Effortlessly with TaxWizard: Customized Advice, Error Detection, and Tax Optimization at Your Fingertips!</p>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg px-4 gap-3">Go to Dashboard</a>
+            {% else %}
+            <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-4 gap-3">Get Started</a>
+            <a href="{{ url_for('login') }}" class="btn btn-outline-secondary btn-lg px-4">Login</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="dashboard-card-grid">
+        <div class="card h-100 dashboard-card">
+            <div class="card-body d-flex flex-column">
+                <div class="text-center mb-3">
+                    <i class="fas fa-robot text-primary" style="font-size: 2.5rem;"></i>
+                </div>
+                <h3 class="card-title text-center">Data Collection</h3>
+                <p class="card-text">Automate the collection of tax-related data from various sources. Our system gathers information from income statements, expense reports, and investment records in real-time.</p>
+            </div>
+        </div>
+        <div class="card h-100 dashboard-card">
+            <div class="card-body d-flex flex-column">
+                <div class="text-center mb-3">
+                    <i class="fas fa-lightbulb text-warning" style="font-size: 2.5rem;"></i>
+                </div>
+                <h3 class="card-title text-center">Personalized Advice</h3>
+                <p class="card-text">Get tailored tax filing advice based on your financial situation. Our system analyzes your data to offer recommendations on deductions, credits, and tax-saving strategies.</p>
+            </div>
+        </div>
+        <div class="card h-100 dashboard-card">
+            <div class="card-body d-flex flex-column">
+                <div class="text-center mb-3">
+                    <i class="fas fa-chart-line text-success" style="font-size: 2.5rem;"></i>
+                </div>
+                <h3 class="card-title text-center">Tax Optimization</h3>
+                <p class="card-text">Our advanced algorithms optimize your tax return to ensure you pay the least amount legally possible. Receive a summary of potential savings and optimization opportunities.</p>
+            </div>
+        </div>
+        <div class="card h-100 dashboard-card">
+            <div class="card-body d-flex flex-column">
+                <div class="text-center mb-3">
+                    <i class="fas fa-balance-scale text-secondary" style="font-size: 2.5rem;"></i>
+                </div>
+                <h3 class="card-title text-center">Compliance Monitoring</h3>
+                <p class="card-text">Ensure your tax filing adheres to the latest laws and regulations. Our system continuously monitors regulatory compliance and provides detailed reports.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bg-light py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h2 class="fw-bold mb-3">Start Filing Your Taxes Smarter Today</h2>
+                <p class="lead">Join thousands of users who are saving time and money with our automated tax filing assistant.</p>
+                <div class="mt-4">
+                    {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">Go to Your Dashboard</a>
+                    {% else %}
+                    <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Create Your Account</a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-6 mt-4 mt-md-0">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title mb-4">Why Choose Our Tax Assistant?</h3>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex align-items-center">
+                                <i class="fas fa-check-circle text-success me-3"></i>
+                                <div>
+                                    <h5 class="mb-1">Save Time</h5>
+                                    <p class="mb-0">Automate data collection and processing</p>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-center">
+                                <i class="fas fa-check-circle text-success me-3"></i>
+                                <div>
+                                    <h5 class="mb-1">Minimize Errors</h5>
+                                    <p class="mb-0">AI-powered error detection and correction</p>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-center">
+                                <i class="fas fa-check-circle text-success me-3"></i>
+                                <div>
+                                    <h5 class="mb-1">Maximize Refunds</h5>
+                                    <p class="mb-0">Advanced tax optimization strategies</p>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-center">
+                                <i class="fas fa-check-circle text-success me-3"></i>
+                                <div>
+                                    <h5 class="mb-1">Ensure Compliance</h5>
+                                    <p class="mb-0">Stay up-to-date with tax laws and regulations</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

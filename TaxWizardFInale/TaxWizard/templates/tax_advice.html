@@ -1,0 +1,230 @@
+{% extends 'layout.html' %}
+
+{% block title %}Tax Advice - TaxWizard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="mb-3">Personalized Tax Advice</h1>
+        <p class="lead">Based on your tax information, here are some personalized recommendations to optimize your tax filing.</p>
+    </div>
+</div>
+
+{% if tax_data %}
+<div class="row g-4 mb-4">
+    <!-- Tax Overview Card -->
+    <div class="col-md-4">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">Your Tax Overview</h5>
+                <ul class="list-group list-group-flush mt-3">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Filing Status:
+                        <span class="badge bg-primary rounded-pill">{{ tax_data.filing_status }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Income:
+                        <span class="badge bg-success rounded-pill">₹{{ tax_data.income|round(2) }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Dependents:
+                        <span class="badge bg-info rounded-pill">{{ tax_data.dependents }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Total Itemized Deductions:
+                        <span class="badge bg-warning rounded-pill">₹{{ (tax_data.mortgage_interest + tax_data.property_tax + tax_data.charitable_contributions + tax_data.medical_expenses)|round(2) }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tax Liability Card -->
+    <div class="col-md-8">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">Tax Liability Estimate</h5>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <tbody>
+                                    <tr>
+                                        <th>Adjusted Gross Income:</th>
+                                        <td class="text-end">₹{{ tax_liability.agi|round(2) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Deduction Used:</th>
+                                        <td class="text-end">{{ tax_liability.deduction_used }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Deduction Amount:</th>
+                                        <td class="text-end">
+                                            ₹{{ tax_liability.standard_deduction|round(2) if tax_liability.deduction_used == 'Standard' else tax_liability.itemized_deductions|round(2) }}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Taxable Income:</th>
+                                        <td class="text-end">₹{{ tax_liability.taxable_income|round(2) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Dependent Credit:</th>
+                                        <td class="text-end">₹{{ tax_liability.dependent_credit|round(2) }}</td>
+                                    </tr>
+                                    <tr class="table-active">
+                                        <th>Estimated Tax Liability:</th>
+                                        <td class="text-end fw-bold">₹{{ tax_liability.tax_liability|round(2) }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="chart-container">
+                            <canvas id="taxDistributionChart" 
+                                    data-income="{{ tax_liability.agi }}"
+                                    data-tax-liability="{{ tax_liability.tax_liability }}">
+                            </canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Personalized Advice Card -->
+    <div class="col-md-8">
+        <div class="card dashboard-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Personalized Tax Advice</h5>
+                <span class="badge bg-primary">{{ advice_list|length }} Recommendations</span>
+            </div>
+            <div class="card-body">
+                {% if advice_list %}
+                    {% for advice in advice_list %}
+                        <div class="advice-item mb-4">
+                            <h5 class="advice-item-title">
+                                <i class="fas fa-lightbulb text-warning me-2"></i>{{ advice.category }}
+                            </h5>
+                            <p class="mb-2">{{ advice.advice_text }}</p>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <span class="potential-savings">
+                                    <i class="fas fa-coins me-1"></i> Potential Savings: ₹{{ advice.potential_savings|round(2) }}
+                                </span>
+                                <small class="text-muted">Tax Year: {{ advice.tax_year }}</small>
+                            </div>
+                        </div>
+                        {% if not loop.last %}<hr>{% endif %}
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-info-circle fa-3x text-info mb-3"></i>
+                        <p>No personalized advice is available yet. Please complete your tax information.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Deductions Breakdown -->
+    <div class="col-md-4">
+        <div class="card dashboard-card">
+            <div class="card-header">
+                <h5 class="mb-0">Deductions Breakdown</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="deductionsChart" 
+                            data-mortgage-interest="{{ tax_data.mortgage_interest }}"
+                            data-property-tax="{{ tax_data.property_tax }}"
+                            data-charitable-contributions="{{ tax_data.charitable_contributions }}"
+                            data-medical-expenses="{{ tax_data.medical_expenses }}"
+                            data-other-deductions="{{ tax_data.retirement_contributions }}">
+                    </canvas>
+                </div>
+                
+                <div class="mt-4">
+                    <h6 class="mb-3">Standard vs. Itemized Deduction</h6>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Standard Deduction:</span>
+                        <span class="fw-bold">₹{{ tax_liability.standard_deduction|round(2) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Your Itemized Deductions:</span>
+                        <span class="fw-bold">₹{{ tax_liability.itemized_deductions|round(2) }}</span>
+                    </div>
+                    
+                    <div class="alert alert-{{ 'success' if tax_liability.itemized_deductions > tax_liability.standard_deduction else 'warning' }} mt-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        {% if tax_liability.itemized_deductions > tax_liability.standard_deduction %}
+                            Itemizing your deductions could save you ₹{{ (tax_liability.itemized_deductions - tax_liability.standard_deduction)|round(2) }}
+                        {% else %}
+                            Taking the standard deduction saves you ₹{{ (tax_liability.standard_deduction - tax_liability.itemized_deductions)|round(2) }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-5">
+    <div class="col-md-12">
+        <div class="card dashboard-card">
+            <div class="card-header">
+                <h5 class="mb-0">Next Steps</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-4 text-center">
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded">
+                            <i class="fas fa-file-upload fa-2x text-primary mb-3"></i>
+                            <h5>Upload Documents</h5>
+                            <p>Upload any additional supporting documents for your tax filing.</p>
+                            <a href="{{ url_for('file_upload') }}" class="btn btn-outline-primary mt-2">Upload Documents</a>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded">
+                            <i class="fas fa-chart-line fa-2x text-success mb-3"></i>
+                            <h5>Optimize Your Taxes</h5>
+                            <p>Explore strategies to further optimize your tax situation.</p>
+                            <a href="{{ url_for('tax_optimization') }}" class="btn btn-outline-primary mt-2">View Optimization</a>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded">
+                            <i class="fas fa-clipboard-check fa-2x text-warning mb-3"></i>
+                            <h5>Check Compliance</h5>
+                            <p>Ensure your tax filing meets all regulatory requirements.</p>
+                            <a href="{{ url_for('compliance') }}" class="btn btn-outline-primary mt-2">Check Compliance</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-exclamation-circle fa-4x text-warning mb-4"></i>
+                <h3>No Tax Data Available</h3>
+                <p class="lead">Please enter your tax information to receive personalized advice.</p>
+                <a href="{{ url_for('data_collection') }}" class="btn btn-primary mt-3">
+                    <i class="fas fa-edit me-2"></i> Enter Tax Information
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,89 @@
+# Step 1: Import libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_squared_error, r2_score
+
+# Step 2: Create Synthetic Dataset
+np.random.seed(42)
+
+n_samples = 1000
+data = {
+    'annual_income': np.random.normal(800000, 200000, n_samples).clip(300000, 2000000),
+    'investment_80C': np.random.uniform(0, 150000, n_samples),
+    'insurance_premium_80D': np.random.uniform(0, 50000, n_samples),
+    'home_loan_interest': np.random.uniform(0, 200000, n_samples),
+    'education_loan_interest': np.random.uniform(0, 100000, n_samples),
+    'house_rent_paid': np.random.uniform(0, 250000, n_samples)
+}
+
+df = pd.DataFrame(data)
+
+# Step 3: Define Target (Tax Refund Amount)
+def calculate_tax_refund(row):
+    total_deductions = row['investment_80C'] + row['insurance_premium_80D'] + row['home_loan_interest'] + row['education_loan_interest'] + (0.4 * row['house_rent_paid'])
+    taxable_income = max(row['annual_income'] - total_deductions, 250000)
+    
+    if taxable_income <= 500000:
+        tax_payable = 0
+    elif taxable_income <= 1000000:
+        tax_payable = 0.1 * (taxable_income - 500000)
+    else:
+        tax_payable = 0.2 * (taxable_income - 1000000) + 50000
+
+    max_tax = 0.2 * (row['annual_income'] - 1000000) + 50000 if row['annual_income'] > 1000000 else 0.1 * (row['annual_income'] - 500000)
+    max_tax = max(max_tax, 0)
+    refund = max(0, max_tax - tax_payable)
+    return refund
+
+df['expected_tax_refund'] = df.apply(calculate_tax_refund, axis=1)
+
+# Step 4: Prepare Train/Test Data
+X = df.drop('expected_tax_refund', axis=1)
+y = df['expected_tax_refund']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Step 5: Train Model
+model = RandomForestRegressor(n_estimators=100, random_state=42)
+model.fit(X_train, y_train)
+
+# Step 6: System takes User Input
+print("\n----- Welcome to Tax Refund Predictor -----\n")
+try:
+    annual_income = float(input("Enter your Annual Income (in ₹): "))
+    investment_80C = float(input("Enter your Investment under Section 80C (in ₹, max 1.5L): "))
+    insurance_premium_80D = float(input("Enter your Insurance Premium under Section 80D (in ₹, max 50K): "))
+    home_loan_interest = float(input("Enter your Home Loan Interest Paid (in ₹, max 2L): "))
+    education_loan_interest = float(input("Enter your Education Loan Interest Paid (in ₹, max 1L): "))
+    house_rent_paid = float(input("Enter your House Rent Paid (in ₹): "))
+
+    # Create input DataFrame
+    user_input = pd.DataFrame([{
+        'annual_income': annual_income,
+        'investment_80C': investment_80C,
+        'insurance_premium_80D': insurance_premium_80D,
+        'home_loan_interest': home_loan_interest,
+        'education_loan_interest': education_loan_interest,
+        'house_rent_paid': house_rent_paid
+    }])
+
+    # Step 7: Predict
+    predicted_refund = model.predict(user_input)[0]
+    print(f"\n🎯 Based on your inputs, your estimated Maximum Tax Refund is: ₹{round(predicted_refund, 2)}")
+
+    # Step 8: Plot Pie Chart for User Deductions
+    deductions = {
+        'Investment 80C': investment_80C,
+        'Insurance 80D': insurance_premium_80D,
+        'Home Loan Interest': home_loan_interest,
+        'Education Loan Interest': education_loan_interest,
+        '40% of House Rent': 0.4 * house_rent_paid
+    }
+
+    
+
+except Exception as e:
+    print(f"Error: {e}"
