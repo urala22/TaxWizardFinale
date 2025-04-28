@@ -1,0 +1,249 @@
+{% extends 'layout.html' %}
+
+{% block title %}File Upload - TaxWizard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="mb-3">Tax Document Upload</h1>
+        <p class="lead">Upload your tax documents to enhance our analysis and recommendations.</p>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Upload Form Card -->
+    <div class="col-md-6">
+        <div class="card dashboard-card">
+            <div class="card-header">
+                <h5 class="mb-0">Upload New Document</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('file_upload') }}" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="document_type" class="form-label">Document Type</label>
+                        <select class="form-select" id="document_type" name="document_type" required>
+                            <option value="" selected disabled>Select document type</option>
+                            <option value="Form16">Form 16 (Salary Income)</option>
+                            <option value="Form16A">Form 16A (TDS on Income other than Salary)</option>
+                            <option value="Form26AS">Form 26AS (Tax Credit Statement)</option>
+                            <option value="HomeLoan">Home Loan Interest Certificate</option>
+                            <option value="Form10E">Form 10E (Income Averaging Relief)</option>
+                            <option value="PPF">PPF Statement</option>
+                            <option value="LIC">LIC Premium Receipt</option>
+                            <option value="MedicalBills">Medical Bills and Insurance</option>
+                            <option value="Form12BA">Form 12BA (Perquisites Statement)</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <div class="invalid-feedback">
+                            Please select a document type.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="tax_year" class="form-label">Tax Year</label>
+                        <select class="form-select" id="tax_year" name="tax_year" required>
+                            <option value="" selected disabled>Select tax year</option>
+                            {% for year in range(datetime.now().year, datetime.now().year - 5, -1) %}
+                                <option value="{{ year }}">{{ year }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="invalid-feedback">
+                            Please select a tax year.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description (Optional)</label>
+                        <textarea class="form-control" id="description" name="description" rows="2" placeholder="Enter a brief description of the document"></textarea>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="file" class="form-label">Document File</label>
+                        <div class="upload-container" onclick="document.getElementById('file').click();">
+                            <div class="upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <h5>Drag & Drop or Click to Upload</h5>
+                            <p class="text-muted">Supported formats: PDF, JPG, PNG, CSV, TXT, XLS, XLSX</p>
+                            <div id="file-name-display" class="mt-2"></div>
+                            <input type="file" class="form-control d-none" id="file" name="file" 
+                                   data-allowed-extensions="pdf,jpg,jpeg,png,csv,xls,xlsx,txt" required>
+                        </div>
+                        <div class="invalid-feedback">
+                            Please upload a document file.
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload me-2"></i>Upload Document
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Uploaded Documents Card -->
+    <div class="col-md-6">
+        <div class="card dashboard-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Your Documents</h5>
+                {% if tax_documents %}
+                    <span class="badge bg-primary">{{ tax_documents|length }} Documents</span>
+                {% else %}
+                    <span class="badge bg-secondary">No Documents</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if tax_documents %}
+                    <ul class="document-list">
+                        {% for doc in tax_documents %}
+                            <li class="document-item">
+                                <div class="document-icon">
+                                    {% if doc.filename.endswith(('.pdf')) %}
+                                        <i class="fas fa-file-pdf text-danger"></i>
+                                    {% elif doc.filename.endswith(('.jpg', '.jpeg', '.png')) %}
+                                        <i class="fas fa-file-image text-primary"></i>
+                                    {% elif doc.filename.endswith(('.csv', '.xls', '.xlsx')) %}
+                                        <i class="fas fa-file-excel text-success"></i>
+                                    {% else %}
+                                        <i class="fas fa-file-alt text-secondary"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="document-info">
+                                    <div class="document-name">{{ doc.document_type }}</div>
+                                    <div class="document-meta">
+                                        {{ doc.filename }} | Tax Year: {{ doc.tax_year }}
+                                    </div>
+                                    <div class="document-meta">
+                                        Uploaded: {{ doc.upload_date.strftime('%Y-%m-%d') }}
+                                    </div>
+                                    {% if doc.description %}
+                                        <div class="document-meta text-muted">
+                                            {{ doc.description }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-folder-open fa-3x text-secondary mb-3"></i>
+                        <p>You haven't uploaded any documents yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-5">
+    <div class="col-md-12">
+        <div class="card dashboard-card">
+            <div class="card-header">
+                <h5 class="mb-0">Document Checklist for Complete Tax Filing</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="mb-3">Income Documents</h6>
+                        <ul class="list-group list-group-flush mb-4">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Form 16 (Salary Income)
+                                <span class="badge bg-{{ 'success' if tax_documents and tax_documents|selectattr('document_type', 'equalto', 'Form16')|list|length else 'secondary' }} rounded-pill">
+                                    {{ 'Uploaded' if tax_documents and tax_documents|selectattr('document_type', 'equalto', 'Form16')|list|length else 'Missing' }}
+                                </span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Form 16A (Other Income)
+                                <span class="badge bg-{{ 'success' if tax_documents and tax_documents|selectattr('document_type', 'equalto', 'Form16A')|list|length else 'secondary' }} rounded-pill">
+                                    {{ 'Uploaded' if tax_documents and tax_documents|selectattr('document_type', 'equalto', 'Form16A')|list|length else 'Missing' }}
+                                </span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Schedule C (Self-Employment)
+                                <span class="badge bg-{{ 'success' if tax_documents and tax_documents|selectattr('document_type', 'equalto', 'Schedule_C')|list|length else 'secondary' }} rounded-pill">
+                                    {{ 'Uploaded' if tax_documents and tax_documents|selectattr('document_type', 'equalto', 'Schedule_C')|list|length else 'Missing' }}
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6 class="mb-3">Deduction Documents</h6>
+                        <ul class="list-group list-group-flush mb-4">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Home Loan Interest Certificate
+                                <span class="badge bg-{{ 'success' if tax_documents and tax_documents|selectattr('document_type', 'equalto', 'HomeLoan')|list|length else 'secondary' }} rounded-pill">
+                                    {{ 'Uploaded' if tax_documents and tax_documents|selectattr('document_type', 'equalto', 'HomeLoan')|list|length else 'Missing' }}
+                                </span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Charitable Donation Receipts
+                                <span class="badge bg-{{ 'success' if tax_documents and tax_documents|selectattr('description', 'defined')|selectattr('description', 'search', 'Charitable')|list|length else 'secondary' }} rounded-pill">
+                                    {{ 'Uploaded' if tax_documents and tax_documents|selectattr('description', 'defined')|selectattr('description', 'search', 'Charitable')|list|length else 'Missing' }}
+                                </span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Medical Expense Records
+                                <span class="badge bg-{{ 'success' if tax_documents and tax_documents|selectattr('description', 'defined')|selectattr('description', 'search', 'Medical')|list|length else 'secondary' }} rounded-pill">
+                                    {{ 'Uploaded' if tax_documents and tax_documents|selectattr('description', 'defined')|selectattr('description', 'search', 'Medical')|list|length else 'Missing' }}
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/form_validation.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Show file name when file is selected
+    const fileInput = document.getElementById('file');
+    const fileNameDisplay = document.getElementById('file-name-display');
+    
+    fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            fileNameDisplay.textContent = 'Selected: ' + this.files[0].name;
+            fileNameDisplay.classList.add('mt-2', 'alert', 'alert-info');
+        } else {
+            fileNameDisplay.textContent = '';
+            fileNameDisplay.classList.remove('mt-2', 'alert', 'alert-info');
+        }
+    });
+    
+    // Handle drag and drop
+    const uploadContainer = document.querySelector('.upload-container');
+    
+    uploadContainer.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadContainer.classList.add('border-primary');
+    });
+    
+    uploadContainer.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        uploadContainer.classList.remove('border-primary');
+    });
+    
+    uploadContainer.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadContainer.classList.remove('border-primary');
+        
+        if (e.dataTransfer.files.length > 0) {
+            fileInput.files = e.dataTransfer.files;
+            
+            // Trigger change event
+            const event = new Event('change', { bubbles: true });
+            fileInput.dispatchEvent(event);
+        }
+    });
+});
+</script>
+{% endblock %}

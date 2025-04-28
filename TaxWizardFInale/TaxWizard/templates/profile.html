@@ -1,0 +1,312 @@
+{% extends 'layout.html' %}
+
+{% block title %}Profile - Automated Tax Filing Assistant{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="mb-3">Your Profile</h1>
+        <p class="lead">Manage your account information and settings.</p>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <!-- Account Information Card -->
+    <div class="col-md-6">
+        <div class="card dashboard-card">
+            <div class="card-header">
+                <h5 class="mb-0">Account Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('profile') }}" class="needs-validation" novalidate>
+                    <input type="hidden" name="update_profile" value="1">
+                    
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" value="{{ current_user.username }}" readonly disabled>
+                        <div class="form-text">Username cannot be changed.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ current_user.email }}" required>
+                        <div class="invalid-feedback">
+                            Please enter a valid email address.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="member_since" class="form-label">Member Since</label>
+                        <input type="text" class="form-control" id="member_since" value="{{ current_user.created_at.strftime('%B %d, %Y') }}" readonly disabled>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Update Profile
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Change Password Card -->
+    <div class="col-md-6">
+        <div class="card dashboard-card">
+            <div class="card-header">
+                <h5 class="mb-0">Change Password</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('profile') }}" class="needs-validation" novalidate>
+                    <input type="hidden" name="change_password" value="1">
+                    
+                    <div class="mb-3">
+                        <label for="current_password" class="form-label">Current Password</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="current_password" name="current_password" required>
+                            <button class="btn btn-outline-secondary toggle-password" type="button" data-target="current_password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <div class="invalid-feedback">
+                                Please enter your current password.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="new_password" class="form-label">New Password</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="new_password" name="new_password" data-type="password-new" required>
+                            <button class="btn btn-outline-secondary toggle-password" type="button" data-target="new_password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <div class="invalid-feedback">
+                                Password must be at least 8 characters with at least one number, one uppercase letter, and one special character.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="confirm_password" class="form-label">Confirm New Password</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" data-type="password-confirm" required>
+                            <button class="btn btn-outline-secondary toggle-password" type="button" data-target="confirm_password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <div class="invalid-feedback">
+                                Passwords do not match.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-key me-2"></i>Change Password
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Account Security Card -->
+    <div class="col-md-6">
+        <div class="card dashboard-card">
+            <div class="card-header">
+                <h5 class="mb-0">Account Security</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h6 class="mb-3">Security Recommendations</h6>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fas fa-check-circle text-success"></i>
+                            </div>
+                            <div>
+                                <span class="d-block fw-bold">Use a Strong Password</span>
+                                <small class="text-muted">Include uppercase, lowercase, numbers, and special characters</small>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fas fa-check-circle text-success"></i>
+                            </div>
+                            <div>
+                                <span class="d-block fw-bold">Change Password Regularly</span>
+                                <small class="text-muted">Update your password every 3-6 months</small>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fas fa-check-circle text-success"></i>
+                            </div>
+                            <div>
+                                <span class="d-block fw-bold">Keep Your Email Secure</span>
+                                <small class="text-muted">Your email is used for account recovery</small>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Data Privacy Card -->
+    <div class="col-md-6">
+        <div class="card dashboard-card">
+            <div class="card-header">
+                <h5 class="mb-0">Data Privacy</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h6 class="mb-3">Your Data</h6>
+                    <p>We take the security and privacy of your tax information seriously. Your data is:</p>
+                    <ul>
+                        <li>Encrypted at rest and in transit</li>
+                        <li>Stored securely in compliance with industry standards</li>
+                        <li>Never shared with third parties without your explicit consent</li>
+                        <li>Accessible only to you and authorized system processes</li>
+                    </ul>
+                    
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        You can request a copy of your data or account deletion by contacting our support team.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card dashboard-card">
+            <div class="card-header">
+                <h5 class="mb-0">Additional Settings</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <h6>Notification Preferences</h6>
+                        <form class="mt-3">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                                <label class="form-check-label" for="emailNotifications">
+                                    Email Notifications
+                                </label>
+                                <div class="form-text">Receive updates about your tax filing status</div>
+                            </div>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="taxUpdates" checked>
+                                <label class="form-check-label" for="taxUpdates">
+                                    Tax Law Updates
+                                </label>
+                                <div class="form-text">Receive notifications about relevant tax law changes</div>
+                            </div>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="optimizationAlerts" checked>
+                                <label class="form-check-label" for="optimizationAlerts">
+                                    Optimization Alerts
+                                </label>
+                                <div class="form-text">Get notified about new tax optimization opportunities</div>
+                            </div>
+                            
+                            <button type="button" class="btn btn-outline-primary mt-2" disabled>
+                                <i class="fas fa-save me-2"></i>Save Preferences
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6>Account Actions</h6>
+                        <div class="d-grid gap-2 mt-3">
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-tachometer-alt me-2"></i>Return to Dashboard
+                            </a>
+                            <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#exportDataModal">
+                                <i class="fas fa-file-export me-2"></i>Export Your Data
+                            </button>
+                            <a href="{{ url_for('logout') }}" class="btn btn-outline-danger">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export Data Modal -->
+<div class="modal fade" id="exportDataModal" tabindex="-1" aria-labelledby="exportDataModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exportDataModalLabel">Export Your Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Choose which data you would like to export:</p>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="exportTaxData" checked>
+                    <label class="form-check-label" for="exportTaxData">
+                        Tax Information
+                    </label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="exportDocuments" checked>
+                    <label class="form-check-label" for="exportDocuments">
+                        Uploaded Documents
+                    </label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="exportAdvice" checked>
+                    <label class="form-check-label" for="exportAdvice">
+                        Tax Advice & Optimizations
+                    </label>
+                </div>
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Data will be exported in CSV format. This process may take a few minutes.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                    <i class="fas fa-download me-2"></i>Export Data
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/form_validation.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle password visibility
+    const toggleButtons = document.querySelectorAll('.toggle-password');
+    
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const targetInput = document.getElementById(targetId);
+            
+            if (targetInput.type === 'password') {
+                targetInput.type = 'text';
+                this.innerHTML = '<i class="fas fa-eye-slash"></i>';
+            } else {
+                targetInput.type = 'password';
+                this.innerHTML = '<i class="fas fa-eye"></i>';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

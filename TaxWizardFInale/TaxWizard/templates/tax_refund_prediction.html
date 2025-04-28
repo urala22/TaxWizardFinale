@@ -1,0 +1,130 @@
+
+{% extends 'layout.html' %}
+
+{% block title %}Tax Refund Prediction - TaxWizard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="mb-3">Tax Refund Prediction</h1>
+        <p class="lead">Enter your financial details to get an AI-powered prediction of your maximum possible tax refund.</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form id="refundPredictionForm" class="row g-3">
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input type="number" class="form-control" id="annual_income" name="annual_income" placeholder="0" required>
+                    <label for="annual_income">Annual Income (₹)</label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input type="number" class="form-control" id="investment_80C" name="investment_80C" placeholder="0" required>
+                    <label for="investment_80C">Investment under 80C (₹)</label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input type="number" class="form-control" id="insurance_premium_80D" name="insurance_premium_80D" placeholder="0" required>
+                    <label for="insurance_premium_80D">Insurance Premium 80D (₹)</label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input type="number" class="form-control" id="home_loan_interest" name="home_loan_interest" placeholder="0" required>
+                    <label for="home_loan_interest">Home Loan Interest (₹)</label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input type="number" class="form-control" id="education_loan_interest" name="education_loan_interest" placeholder="0" required>
+                    <label for="education_loan_interest">Education Loan Interest (₹)</label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input type="number" class="form-control" id="house_rent_paid" name="house_rent_paid" placeholder="0" required>
+                    <label for="house_rent_paid">House Rent Paid (₹)</label>
+                </div>
+            </div>
+            <div class="col-12 text-center mt-4">
+                <button type="button" class="btn btn-primary btn-lg" onclick="predictRefund()">
+                    <i class="fas fa-calculator me-2"></i>Predict Max Refund
+                </button>
+            </div>
+        </form>
+
+        <div id="predictionResult" class="mt-4 text-center" style="display: none;">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h4 class="card-title mb-3">Estimated Maximum Tax Refund</h4>
+                    <div class="display-4 text-success mb-3">₹<span id="refundAmount">0</span></div>
+                    <p class="text-muted mb-0">This is an AI-powered estimate based on your inputs</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="loadingIndicator" class="text-center mt-4" style="display: none;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Calculating your maximum refund...</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function predictRefund() {
+    const form = document.getElementById('refundPredictionForm');
+    if (!form.checkValidity()) {
+        form.classList.add('was-validated');
+        return;
+    }
+
+    const formData = new FormData(form);
+    const data = {
+        annual_income: parseFloat(formData.get('annual_income')),
+        investment_80C: parseFloat(formData.get('investment_80C') || '0'),
+        insurance_premium_80D: parseFloat(formData.get('insurance_premium_80D') || '0'),
+        home_loan_interest: parseFloat(formData.get('home_loan_interest') || '0'),
+        education_loan_interest: parseFloat(formData.get('education_loan_interest') || '0'),
+        house_rent_paid: parseFloat(formData.get('house_rent_paid') || '0')
+    };
+    
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const predictionResult = document.getElementById('predictionResult');
+    
+    try {
+        loadingIndicator.style.display = 'block';
+        predictionResult.style.display = 'none';
+        
+        const response = await fetch('/predict_refund', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        document.getElementById('refundAmount').textContent = result.predicted_refund.toLocaleString();
+        
+        loadingIndicator.style.display = 'none';
+        predictionResult.style.display = 'block';
+    } catch (error) {
+        console.error('Error:', error);
+        loadingIndicator.style.display = 'none';
+        const errorAlert = document.createElement('div');
+        errorAlert.className = 'alert alert-danger mt-3';
+        errorAlert.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>Error calculating refund. Please try again.';
+        form.parentNode.insertBefore(errorAlert, form.nextSibling);
+        setTimeout(() => errorAlert.remove(), 5000);
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,178 @@
+{% extends 'layout.html' %}
+
+{% block title %}Tax Optimization - TaxWizard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="mb-3">Tax Optimization Strategies</h1>
+        <p class="lead">Discover personalized strategies to legally minimize your tax liability.</p>
+    </div>
+</div>
+
+{% if tax_data %}
+<div class="row g-4 mb-4">
+    <!-- Tax Summary Card -->
+    <div class="col-md-4">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">Your Tax Summary</h5>
+                <ul class="list-group list-group-flush mt-3">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Filing Status:
+                        <span class="badge bg-primary rounded-pill">{{ tax_data.filing_status }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Income:
+                        <span class="badge bg-success rounded-pill">₹{{ tax_data.income|round(2) }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Self-Employed:
+                        <span class="badge bg-{{ 'success' if tax_data.self_employed else 'secondary' }} rounded-pill">{{ 'Yes' if tax_data.self_employed else 'No' }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Dependents:
+                        <span class="badge bg-info rounded-pill">{{ tax_data.dependents }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Potential Savings Card -->
+    <div class="col-md-8">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">Potential Savings Overview</h5>
+                <div class="row align-items-center mt-3">
+                    <div class="col-md-5">
+                        <div class="text-center">
+                            <div class="display-4 text-success">₹{{ total_savings|round(2) }}</div>
+                            <p class="lead">Total Potential Savings</p>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <div class="chart-container">
+                            <canvas id="savingsComparisonChart" 
+                                    data-current-tax="{{ tax_data.income * 0.25 }}" 
+                                    data-optimized-tax="{{ tax_data.income * 0.25 - total_savings }}">
+                            </canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col">
+        <div class="card dashboard-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Optimization Strategies</h5>
+                <span class="badge bg-primary">{{ optimizations|length }} Strategies</span>
+            </div>
+            <div class="card-body">
+                {% if optimizations %}
+                    {% for opt in optimizations %}
+                        <div class="optimization-item mb-4" id="strategy-{{ loop.index }}">
+                            <div class="row">
+                                <div class="col-md-9">
+                                    <h5 class="strategy-name">
+                                        <i class="fas fa-chart-line text-success me-2"></i>{{ opt.strategy }}
+                                    </h5>
+                                    <p class="mb-2">{{ opt.description }}</p>
+                                </div>
+                                <div class="col-md-3 text-md-end">
+                                    <div class="potential-savings h5 text-success">₹{{ opt.potential_savings|round(2) }}</div>
+                                    <small class="text-muted">Potential Savings</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% if not loop.last %}<hr>{% endif %}
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-info-circle fa-3x text-info mb-3"></i>
+                        <p>No optimization strategies are available yet. Please complete your tax information.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card dashboard-card">
+            <div class="card-header">
+                <h5 class="mb-0">Optimization Comparison</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="height: 400px;">
+                    <canvas id="optimizationChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-5">
+    <div class="col-md-12">
+        <div class="card dashboard-card">
+            <div class="card-header">
+                <h5 class="mb-0">Next Steps</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-4 text-center">
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded">
+                            <i class="fas fa-lightbulb fa-2x text-warning mb-3"></i>
+                            <h5>Review Tax Advice</h5>
+                            <p>Get personalized advice based on your tax situation.</p>
+                            <a href="{{ url_for('tax_advice') }}" class="btn btn-outline-primary mt-2">View Tax Advice</a>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded">
+                            <i class="fas fa-file-upload fa-2x text-primary mb-3"></i>
+                            <h5>Upload Documents</h5>
+                            <p>Upload any additional supporting documents for your tax filing.</p>
+                            <a href="{{ url_for('file_upload') }}" class="btn btn-outline-primary mt-2">Upload Documents</a>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded">
+                            <i class="fas fa-clipboard-check fa-2x text-info mb-3"></i>
+                            <h5>Check Compliance</h5>
+                            <p>Ensure your tax filing meets all regulatory requirements.</p>
+                            <a href="{{ url_for('compliance') }}" class="btn btn-outline-primary mt-2">Check Compliance</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-exclamation-circle fa-4x text-warning mb-4"></i>
+                <h3>No Tax Data Available</h3>
+                <p class="lead">Please enter your tax information to receive optimization strategies.</p>
+                <a href="{{ url_for('data_collection') }}" class="btn btn-primary mt-3">
+                    <i class="fas fa-edit me-2"></i> Enter Tax Information
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
